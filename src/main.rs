@@ -1,9 +1,9 @@
-use std::fs::File;
 use std::io::prelude::*;
+use std::{collections::HashMap, fs::File};
 
 use vector::Point;
 
-use crate::util::{parse_char, query_surrounding_tiles};
+use crate::util::{check_for_gears, parse_char};
 
 mod util;
 mod vector;
@@ -35,6 +35,7 @@ impl Map {
 #[derive(Copy, Clone, PartialEq, Eq, Debug)]
 enum TileType {
     Number(char),
+    Gear,
     Symbol,
     Blank,
 }
@@ -64,32 +65,45 @@ fn main() -> std::io::Result<()> {
     }
 
     let map = Map::new(tile_type, tile_coords, map_width, map_height);
-    let mut sum = 0;
 
-    let mut memory = String::new();
-    let mut part_has_symbol = false;
+    let mut number_as_string = String::new();
+    let mut number_storage = HashMap::new();
 
-    for (id, tiles) in map.tile_coord.iter().enumerate() {
-        if let TileType::Number(value) = map.tile_type[id] {
-            memory.push(value);
-            if query_surrounding_tiles(&map, tiles) {
-                part_has_symbol = true;
+    let mut has_gear = false;
+    let mut gear_id = 0;
+
+    for (id, tile) in map.tile_type.iter().enumerate() {
+        match *tile {
+            TileType::Number(value) => {
+                number_as_string.push(value);
+                if let Some(gear) = check_for_gears(&map, id) {
+                    gear_id = gear;
+                    has_gear = true;
+                }
             }
-        }
-        if map.tile_type[id] == TileType::Blank && part_has_symbol
-            || map.tile_type[id] == TileType::Symbol && part_has_symbol
-        {
-            if let Ok(number) = memory.parse::<i32>() {
-                sum += number;
-                memory.clear();
+            _ => {
+                if has_gear {
+                    let number = number_as_string.parse::<i32>().unwrap();
+                    number_storage
+                        .entry(gear_id)
+                        .or_insert(Vec::new())
+                        .push(number);
+                }
+                number_as_string.clear();
+                has_gear = false;
             }
-            part_has_symbol = false;
-        } else if map.tile_type[id] == TileType::Blank && !part_has_symbol {
-            memory.clear();
         }
     }
 
-    println!("{sum}");
+    let mut sum = 0;
+
+    for (_, value) in &mut number_storage {
+        if value.len() > 1 {
+            sum += value.iter().product::<i32>();
+        }
+    }
+
+    println!("the awnser = {sum}");
 
     Ok(())
 }
