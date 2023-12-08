@@ -78,13 +78,7 @@ fn main() {
                     let difference = destination - source;
                     let end_range = source + range;
 
-                    let mut found = false;
-
                     if *seed >= source && *seed < end_range {
-                        found = true;
-                    }
-
-                    if found {
                         *seed += difference;
                         break;
                     }
