@@ -62,10 +62,6 @@ fn main() {
                 let difference = destination - source;
                 let end_range = source + range - 1;
 
-                if end_range >= max_range {
-                    max_range = end_range;
-                }
-
                 let mut found = false;
 
                 if *seed >= source && *seed <= end_range {
