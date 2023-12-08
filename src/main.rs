@@ -27,10 +27,22 @@ fn main() {
         }
     }
 
+    let seed_pairs: Vec<(i64, i64)> = seed_storage
+        .chunks(2)
+        .filter_map(|chunk| {
+            if chunk.len() == 2 {
+                Some((chunk[0], chunk[1]))
+            } else {
+                None
+            }
+        })
+        .collect();
+
+    dbg!(&seed_pairs[0]);
+
     let farming_methods = get_farming_methods();
     let mut current_section = String::new();
     let mut methods = Vec::new();
-    let mut max_range = 0;
 
     for method in farming_methods.iter() {
         for line in content.lines() {
@@ -61,10 +73,6 @@ fn main() {
 
                 let difference = destination - source;
                 let end_range = source + range - 1;
-
-                if end_range >= max_range {
-                    max_range = end_range;
-                }
 
                 let mut found = false;
 
