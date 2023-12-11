@@ -48,7 +48,7 @@ impl PartialOrd for Hand {
                     })
                     .unwrap(),
             ),
-            same => Some(same),
+            order => Some(order),
         }
     }
 }

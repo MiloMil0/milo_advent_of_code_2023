@@ -29,7 +29,7 @@ fn main() {
     }
 
     hands.sort_by(|a, b| a.partial_cmp(&b).unwrap());
-    dbg!(&hands);
+    // dbg!(&hands);
 
     let mut sum = 0;
     for (mut i, hand) in hands.iter().enumerate() {
