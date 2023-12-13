@@ -23,7 +23,8 @@ fn main() {
 
     let mut answer = 0;
 
-    for sequence in numbers.iter() {
+    for sequence in numbers.iter_mut() {
+        sequence.reverse();
         let differences = calculate_differences(&sequence);
         let result = get_final_number(&differences);
         answer += result;
