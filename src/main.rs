@@ -1,6 +1,6 @@
 use std::fs;
 
-use util::{parse_direction, Direction, Location};
+use util::{calculate_lcm, find_path_length, parse_direction, Location};
 
 mod util;
 
@@ -32,60 +32,42 @@ fn main() {
                 continue;
             }
 
-            let current_position = parts[0].trim();
+            let current_position = parts[0].chars().collect::<Vec<char>>();
             let directions_parts = parts[1]
                 .trim_matches(|c| c == '(' || c == ')' || c == ' ')
                 .split(", ")
-                .collect::<Vec<_>>();
+                .map(|s| s.chars().collect())
+                .collect::<Vec<Vec<char>>>();
 
             if directions_parts.len() != 2 {
                 continue;
             }
 
-            let left_position = directions_parts[0];
-            let right_position = directions_parts[1];
+            let left_position = directions_parts[0].clone();
+            let right_position = directions_parts[1].clone();
 
             let location = Location {
-                position: current_position.to_string(),
-                left: left_position.to_string(),
-                right: right_position.to_string(),
+                position: current_position,
+                left: left_position,
+                right: right_position,
             };
 
             locations.push(location);
         }
     }
 
-    let mut current_position = "AAA";
-    let end_position = "ZZZ";
-    let mut count = 0;
+    let mut path_lengths = Vec::new();
 
-    while &current_position != &end_position {
-        for direction in &directions {
-            count += 1;
-            let find_location = locations
-                .iter()
-                .find(|x| x.position == current_position)
-                .map(|x| {
-                    if direction == &Direction::Left {
-                        &x.left
-                    } else {
-                        &x.right
-                    }
-                });
-            match find_location {
-                Some(next_location) => {
-                    current_position = next_location;
-                }
-                None => {
-                    println!("Couldn't move {:?}: No location found", direction);
-                    break;
-                }
+    locations
+        .iter()
+        .filter(|x| x.position.ends_with(&['A']))
+        .for_each(|position| {
+            if let Some(path_length) = find_path_length(position, &directions, &locations) {
+                path_lengths.push(path_length);
             }
-        }
-    }
+        });
 
-    println!("position reached in {count} moves");
+    let result = calculate_lcm(&path_lengths);
 
-    // dbg!(&directions);
-    // dbg!(&locations);
+    println!("the answer = {}", result);
 }
