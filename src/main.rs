@@ -17,6 +17,11 @@ fn main() {
 
     let mut map = Map::new(content);
 
-    let result = map.try_move();
-    println!("the longest path is {}", result);
+    let longest_path = map.bfs();
+    let enclosed_points = map.calculate_enclosed_points();
+
+    println!(
+        "the longest path is {} and the loop encloses: {} points",
+        longest_path, enclosed_points
+    );
 }

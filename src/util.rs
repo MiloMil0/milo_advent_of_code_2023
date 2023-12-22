@@ -1,18 +1,29 @@
-pub const VALID_UP: [Piece; 3] = [Piece::Vertical, Piece::TopLeftCorner, Piece::TopRightCorner];
-pub const VALID_DOWN: [Piece; 3] = [
+pub const VALID_UP: [Piece; 4] = [
+    Piece::Vertical,
+    Piece::TopLeftCorner,
+    Piece::TopRightCorner,
+    Piece::Animal,
+];
+
+pub const VALID_DOWN: [Piece; 4] = [
     Piece::Vertical,
     Piece::BottomLeftCorner,
     Piece::BottomRightCorner,
+    Piece::Animal,
 ];
-pub const VALID_LEFT: [Piece; 3] = [
+
+pub const VALID_LEFT: [Piece; 4] = [
     Piece::Horizontal,
     Piece::BottomLeftCorner,
     Piece::TopLeftCorner,
+    Piece::Animal,
 ];
-pub const VALID_RIGHT: [Piece; 3] = [
+
+pub const VALID_RIGHT: [Piece; 4] = [
     Piece::Horizontal,
     Piece::TopRightCorner,
     Piece::BottomRightCorner,
+    Piece::Animal,
 ];
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]

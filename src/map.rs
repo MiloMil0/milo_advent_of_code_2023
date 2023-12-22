@@ -44,14 +44,49 @@ impl Map {
         }
     }
 
-    pub fn find_animal(&self) -> Option<usize> {
+    fn get_neighbours(&self, origin: Point) -> Vec<Point> {
+        let mut neighbours = Vec::new();
+
+        for direction in ORTHO_DIRECTIONS {
+            let target = origin + direction;
+
+            if self.is_in_bounds(target.x, target.y) && self.is_valid_move(origin, &target) {
+                neighbours.push(target);
+            }
+        }
+
+        neighbours
+    }
+
+    fn is_in_bounds(&self, target_x: i32, target_y: i32) -> bool {
+        target_x > 0
+            && target_x < self.map_width as i32
+            && target_y > 0
+            && target_y < self.map_height as i32
+    }
+
+    fn is_valid_move(&self, origin: Point, target: &Point) -> bool {
+        let origin_piece = self.map_pieces[origin.y as usize][origin.x as usize];
+        let target_piece = self.map_pieces[target.y as usize][target.x as usize];
+        let difference = *target - origin;
+        match difference {
+            Point::UP => is_valid_up(&origin_piece, &target_piece),
+            Point::DOWN => is_valid_down(&origin_piece, &target_piece),
+            Point::LEFT => is_valid_left(&origin_piece, &target_piece),
+            Point::RIGHT => is_valid_right(&origin_piece, &target_piece),
+            _ => false,
+        }
+    }
+
+    fn find_animal(&self) -> Option<usize> {
         self.map_pieces
             .iter()
             .flatten()
             .position(|piece| piece == &Piece::Animal)
     }
 
-    pub fn try_move(&mut self) -> usize {
+    //part 1
+    pub fn bfs(&mut self) -> usize {
         let mut count = 0;
         if let Some(animal) = self.find_animal() {
             let start_point = self.map_coords[animal];
@@ -72,45 +107,57 @@ impl Map {
                     }
                 }
             }
-
-            for points in visisted {
-                self.full_loop.push(points);
-            }
         }
+
         count
     }
 
-    fn get_neighbours(&self, origin: Point) -> Vec<Point> {
-        let mut neighbours = Vec::new();
+    //part 2
+    pub fn map_whole_loop(&mut self) {
+        if let Some(animal) = self.find_animal() {
+            let mut queue = VecDeque::new();
+            let start = self.map_coords[animal];
 
-        for direction in ORTHO_DIRECTIONS {
-            let target = origin + direction;
+            queue.push_back(start);
 
-            if self.is_in_bounds(&target) && self.is_valid_move(origin, &target) {
-                neighbours.push(target);
+            while let Some(origin) = queue.pop_front() {
+                if !self.full_loop.contains(&origin) {
+                    self.full_loop.push(origin);
+                }
+                for direction in ORTHO_DIRECTIONS {
+                    let target = origin + direction;
+                    if self.is_in_bounds(target.x, target.y)
+                        && self.is_valid_move(origin, &target)
+                        && !self.full_loop.contains(&target)
+                    {
+                        queue.push_back(target);
+                        break;
+                    }
+                }
             }
         }
-
-        neighbours
     }
 
-    fn is_in_bounds(&self, target: &Point) -> bool {
-        target.x >= 0
-            && target.x < self.map_width as i32
-            && target.y >= 0
-            && target.y < self.map_height as i32
-    }
+    pub fn calculate_enclosed_points(&mut self) -> i32 {
+        self.map_whole_loop();
 
-    fn is_valid_move(&self, origin: Point, target: &Point) -> bool {
-        let origin_piece = self.map_pieces[origin.y as usize][origin.x as usize];
-        let target_piece = self.map_pieces[target.y as usize][target.x as usize];
-        let difference = *target - origin;
-        match difference {
-            Point::UP => is_valid_up(&origin_piece, &target_piece),
-            Point::DOWN => is_valid_down(&origin_piece, &target_piece),
-            Point::LEFT => is_valid_left(&origin_piece, &target_piece),
-            Point::RIGHT => is_valid_right(&origin_piece, &target_piece),
-            _ => false,
+        let mut vertices = self.full_loop.to_vec();
+        vertices.push(self.full_loop[0]);
+        let total_vertices = vertices.len() - 1;
+
+        let mut area = 0;
+
+        //shoelace formula to find the area of the loop
+        for v in 0..total_vertices {
+            let first = vertices[v];
+            let second = vertices[v + 1];
+
+            area += (first.x * second.y) - (first.y * second.x);
         }
+
+        area = i32::abs(area) / 2;
+
+        //Pick's Theorem to solve for I
+        area - (total_vertices as i32 / 2) + 1
     }
 }

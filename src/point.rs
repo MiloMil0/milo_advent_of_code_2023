@@ -1,11 +1,11 @@
-use std::ops::{Add, AddAssign, Sub, SubAssign};
+use std::ops::{Add, AddAssign, Div, Mul, Sub, SubAssign};
 
 pub const ORTHO_DIRECTIONS: [Point; 4] = [Point::UP, Point::DOWN, Point::LEFT, Point::RIGHT];
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Default)]
 pub struct Point {
-    pub y: i32,
     pub x: i32,
+    pub y: i32,
 }
 
 impl Point {
@@ -23,6 +23,28 @@ impl Point {
             x: x.try_into().ok().unwrap(),
             y: y.try_into().ok().unwrap(),
         }
+    }
+
+    #[inline]
+    pub fn neighbors(&self) -> Vec<Point> {
+        vec![
+            Point {
+                x: self.x,
+                y: self.y + 1,
+            },
+            Point {
+                x: self.x,
+                y: self.y - 1,
+            },
+            Point {
+                x: self.x + 1,
+                y: self.y,
+            },
+            Point {
+                x: self.x - 1,
+                y: self.y,
+            },
+        ]
     }
 }
 
@@ -57,5 +79,28 @@ impl SubAssign for Point {
             x: self.x - other.x,
             y: self.y - other.y,
         }
+    }
+}
+impl Div<i32> for Point {
+    type Output = Self;
+
+    fn div(self, other: i32) -> Self {
+        Point::new(self.x / other, self.y / other)
+    }
+}
+
+impl Mul<i32> for Point {
+    type Output = Self;
+
+    fn mul(self, other: i32) -> Self {
+        Point::new(self.x * other, self.y * other)
+    }
+}
+
+impl Mul<Point> for i32 {
+    type Output = Point;
+
+    fn mul(self, other: Point) -> Point {
+        Point::new(other.x * self, other.y * self)
     }
 }
