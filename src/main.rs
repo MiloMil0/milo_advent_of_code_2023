@@ -1,12 +1,17 @@
-use std::fs;
+use crate::{parser::parse_content, spring::Record};
+
+mod parser;
+mod spring;
+mod util;
 
 fn main() {
-    //my template for importing the advent puzzles :)
-    let content = match fs::read_to_string("assets/test_input.txt") {
-        Ok(content) => content,
-        Err(e) => {
-            eprintln!("Error reading file: {}", e);
-            return;
-        }
-    };
+    let content = parse_content("puzzle_input");
+    let mut count = 0;
+
+    for line in content.lines() {
+        let spring = Record::new(line);
+        count += spring.possible_combinations();
+    }
+
+    println!("the sum of possible spring combinations = {count}");
 }
