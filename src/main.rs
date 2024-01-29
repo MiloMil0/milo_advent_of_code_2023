@@ -22,81 +22,28 @@ fn valid_mirror(pattern: &str) -> Option<(usize, usize)> {
 }
 
 fn is_valid_smudge(pattern: &Vec<&str>, index: usize, length: usize) -> bool {
-    let mut one_letter_difference_count = 0;
+    let mut smudge_count = 0;
 
     for row in pattern.iter() {
-        let current = &row[index..(index + length)].bytes().collect::<Vec<_>>();
-        // let reversed: String = current.chars().rev().collect();
+        let current = &row[index..(index + length)];
+        if current.len() % 2 != 0 {
+            return false;
+        }
 
-        // println!("{}", current);
-        // println!("{}", reversed);
+        let (first_half, second_half) = current.split_at(current.len() / 2);
 
-        for i in 0..current.len() {
-            for j in i + 1..current.len() {
-                if current[i].zip(current[j]).filter(|(a, b)| a != b).count() == 1 {
-                    // if current
-                    //     .chars()
-                    //     .zip(reversed.chars())
-                    //     .filter(|(a, b)| a != b)
-                    //     .count()
-                    //     == 1
-                    // {
-                    one_letter_difference_count += 1;
-                    println!("{one_letter_difference_count}");
-                } else {
-                    println!();
-                    return false;
-                }
-            }
+        smudge_count += first_half
+            .chars()
+            .zip(second_half.chars().rev())
+            .filter(|(a, b)| a != b)
+            .count();
+        if smudge_count > 1 {
+            return false;
         }
     }
-    println!();
 
-    one_letter_difference_count == 1
+    smudge_count == 1
 }
-
-fn is_valid_reflection(pattern: &str) -> bool {
-    // pattern.iter().all(|row| {
-    // let reflection = &row[index..=(index + length)];
-    let reverse = pattern.chars().rev().collect::<String>();
-    pattern == reverse && pattern.len() % 2 == 0
-    // })
-}
-
-// fn find_smudge(pattern: &str) -> Option<(usize, usize)> {
-//     let mut lines = pattern.lines().collect::<Vec<&str>>();
-//
-//     let line_count = lines.len();
-//
-//     for i in 0..line_count {
-//         for j in i + 1..line_count {
-//             if lines[i]
-//                 .chars()
-//                 .zip(lines[j].chars())
-//                 .filter(|(a, b)| a != b)
-//                 .count()
-//                 == 1
-//             {
-//                 println!(
-//                     "line {i} {} is different from line {j} {} and line length = {}",
-//                     lines[i],
-//                     lines[j],
-//                     lines.len(),
-//                 );
-//                 let mem = lines.clone();
-//                 lines[i] = lines[j];
-//
-//                 if is_valid_smudge(&rotate_map(&lines.join("\n")), i, j) {
-//                     return Some((i, j - i));
-//                 } else {
-//                     lines = mem;
-//                 }
-//             }
-//         }
-//     }
-//
-//     None
-// }
 
 fn rotate_map(input: &str) -> String {
     let matrix: Vec<Vec<char>> = input.lines().map(|line| line.chars().collect()).collect();
@@ -122,32 +69,18 @@ fn calc_value(index: usize, size: usize) -> usize {
 }
 
 fn main() {
-    let content = parse_content("test_input");
+    let content = parse_content("puzzle_input");
 
     let patterns = content.trim().split("\n\n").collect::<Vec<&str>>();
 
     let mut answer = 0;
 
-    for (i, pattern) in patterns.iter().enumerate() {
-        println!("pattern {}: ", i + 1);
-        println!("checking horizontal pattern");
-
+    for pattern in patterns.iter() {
         if let Some((index, size)) = valid_mirror(pattern) {
-            answer += calc_value(index, size) * 100;
-            println!(
-                "map is horizontal for a value of {}",
-                calc_value(index, size) * 100
-            );
-            println!();
-            continue;
-        } else {
-            println!("checking vertical pattern")
-        }
-        if let Some((index, size)) = valid_mirror(&rotate_map(pattern)) {
             answer += calc_value(index, size);
-            println!("map is vertical for a value of {}", calc_value(index, size))
+        } else if let Some((index, size)) = valid_mirror(&rotate_map(pattern)) {
+            answer += calc_value(index, size) * 100;
         }
-        println!();
     }
 
     println!("the answer = {answer}");
